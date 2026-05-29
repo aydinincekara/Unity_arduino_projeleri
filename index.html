@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unity ve Arduino ile 3D Baskılı Simülatör Kontrolcüsü Rehberi</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --bg-color: #f8f9fa;
+            --text-color: #333;
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            border-bottom: 5px solid var(--secondary-color);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 20px;
+        }
+
+        .intro-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-left: 5px solid var(--secondary-color);
+            margin-bottom: 2rem;
+        }
+
+        h1 { margin: 0; font-size: 2.2rem; }
+        h2 { color: var(--primary-color); border-bottom: 2px solid #ddd; padding-bottom: 10px; margin-top: 2rem;}
+        h3 { color: var(--secondary-color); margin-top: 0; }
+
+        ul { padding-left: 20px; }
+        li { margin-bottom: 8px; }
+
+        .step-box {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .step-number {
+            display: inline-block;
+            background: var(--secondary-color);
+            color: white;
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            line-height: 30px;
+            border-radius: 50%;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+        }
+
+        code { font-family: inherit; }
+        
+        .highlight { color: #569cd6; font-weight: bold; }
+        .string { color: #ce9178; }
+        .comment { color: #6a9955; font-style: italic; }
+
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: #666;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="container">
+            <h1>Eğitim Rehberi: Unity ve Arduino Entegrasyonu</h1>
+            <p>3D Baskı Destekli Simülatör Kontrolcüsü Geliştirme</p>
+        </div>
+    </header>
+
+    <div class="container">
+        
+        <div class="intro-card">
+            <h3>📌 Proje Hakkında</h3>
+            <p>Bu rehber, fiziksel donanım ile dijital ortam (Unity) arasındaki seri haberleşme mantığını kavramak amacıyla hazırlanmıştır. Genç yetişkinler ve lise kademesi için yapılandırmacı (constructivist) öğrenme yaklaşımıyla ve sarmal müfredat mantığına uygun olarak tasarlanmıştır. Öğrenciler soyut yazılım kavramlarını, kendi ürettikleri somut bir donanım üzerinden deneyimleyerek öğreneceklerdir.</p>
+        </div>
+
+        <div class="step-box">
+            <h2><span class="step-number">1</span> İhtiyaç Listesi ve 3D Baskı Hazırlığı</h2>
+            <p>Simülatör kasasını oluştururken STL veya 3MF formatındaki dosyalarınızı dilimleyicide hazırlayıp 3D yazıcılarınızda üretebilirsiniz. Kasaya yerleştirilecek bileşenler şunlardır:</p>
+            <ul>
+                <li><strong>Mikrodenetleyici:</strong> Arduino Nano (Kompakt yapısı nedeniyle kasaya kolay gizlenir).</li>
+                <li><strong>Eksen Kontrolü:</strong> 1x İki Eksenli Joystick Modülü.</li>
+                <li><strong>Gaz/Hız Kontrolü:</strong> 1x 10K Ohm Potansiyometre.</li>
+                <li><strong>Aksiyon:</strong> 2x Yaylı Buton (Push Button) veya Havacılık Tipi Switch.</li>
+                <li><strong>Bağlantı ve Montaj:</strong> Breadboard (prototipleme için), daha sonra kalıcı sistem için JST kablolar ve kurşunsuz lehim teli kullanımı önerilir.</li>
+            </ul>
+        </div>
+
+        <div class="step-box">
+            <h2><span class="step-number">2</span> Arduino (C++) Kodlaması ve Veri Gönderimi</h2>
+            <p>Aşağıdaki kod, sensörlerden okunan değerleri tek bir metin satırı halinde aralarına virgül koyarak bilgisayara gönderir.</p>
+<pre><code><span class="comment">// Sensör pin tanımlamaları</span>
+<span class="highlight">const int</span> joyXPin = A0;       <span class="comment">// Joystick X Ekseni</span>
+<span class="highlight">const int</span> joyYPin = A1;       <span class="comment">// Joystick Y Ekseni</span>
+<span class="highlight">const int</span> potPin = A2;        <span class="comment">// Gaz (Potansiyometre) Pini</span>
+<span class="highlight">const int</span> buttonPin = 2;      <span class="comment">// Fonksiyon Butonu Pini</span>
+
+<span class="highlight">void</span> setup() {
+  <span class="comment">// Seri haberleşmeyi başlat (Unity ile aynı hızda olmalı)</span>
+  Serial.begin(<span class="highlight">9600</span>);
+  
+  <span class="comment">// Dahili pull-up direncini aktif ediyoruz (Boşta 1, basılınca 0 döner)</span>
+  pinMode(buttonPin, INPUT_PULLUP);
+}
+
+<span class="highlight">void</span> loop() {
+  <span class="comment">// Değerleri oku (Analog 0-1023 arası)</span>
+  <span class="highlight">int</span> joyX = analogRead(joyXPin);
+  <span class="highlight">int</span> joyY = analogRead(joyYPin);
+  <span class="highlight">int</span> pot = analogRead(potPin);
+  <span class="highlight">int</span> buttonState = digitalRead(buttonPin); 
+
+  <span class="comment">// Verileri paketle ve gönder</span>
+  Serial.print(joyX);
+  Serial.print(<span class="string">","</span>);
+  Serial.print(joyY);
+  Serial.print(<span class="string">","</span>);
+  Serial.print(pot);
+  Serial.print(<span class="string">","</span>);
+  Serial.println(buttonState); <span class="comment">// Satır sonu karakteri (NewLine) ile bitir</span>
+
+  delay(<span class="highlight">20</span>); <span class="comment">// Kararlı akış için ~50Hz yenileme hızı</span>
+}</code></pre>
+        </div>
+
+        <div class="step-box">
+            <h2><span class="step-number">3</span> Unity (C#) Kodlaması ve Veri Çözümleme (Parsing)</h2>
+            <p>Unity'de boş bir GameObject oluşturun ve aşağıdaki C# betiğini ekleyin. Unity'de <code style="background:#eee;color:#333;padding:2px 4px;border-radius:3px;">Edit -> Project Settings -> Player -> API Compatibility Level</code> ayarının <strong>.NET Framework</strong> olduğundan emin olun (System.IO.Ports kullanımı için).</p>
+<pre><code><span class="highlight">using</span> System;
+<span class="highlight">using</span> System.IO.Ports;
+<span class="highlight">using</span> UnityEngine;
+
+<span class="highlight">public class</span> SimulatorController : MonoBehaviour
+{
+    <span class="highlight">private</span> SerialPort _serialPort;
+    
+    [Header(<span class="string">"Bağlantı Ayarları"</span>)]
+    <span class="highlight">public string</span> portName = <span class="string">"COM3"</span>; <span class="comment">// Aygıt yöneticisinden kontrol edin</span>
+    <span class="highlight">public int</span> baudRate = 9600;
+
+    [Header(<span class="string">"Simülasyon Ayarları"</span>)]
+    <span class="highlight">public</span> Transform targetObject;   <span class="comment">// Hareket ettirilecek 3D model</span>
+    <span class="highlight">public float</span> rotationSpeed = 15f;
+
+    <span class="highlight">void</span> Start()
+    {
+        _serialPort = <span class="highlight">new</span> SerialPort(portName, baudRate);
+        _serialPort.ReadTimeout = 50; 
+
+        <span class="highlight">try</span>
+        {
+            _serialPort.Open();
+            Debug.Log(<span class="string">"Port açıldı: "</span> + portName);
+        }
+        <span class="highlight">catch</span> (Exception e)
+        {
+            Debug.LogError(<span class="string">"Bağlantı Hatası: "</span> + e.Message);
+        }
+    }
+
+    <span class="highlight">void</span> Update()
+    {
+        <span class="highlight">if</span> (_serialPort != <span class="highlight">null</span> && _serialPort.IsOpen)
+        {
+            <span class="highlight">try</span>
+            {
+                <span class="highlight">string</span> incomingData = _serialPort.ReadLine();
+                <span class="highlight">if</span> (!<span class="highlight">string</span>.IsNullOrEmpty(incomingData))
+                {
+                    ParseData(incomingData);
+                }
+            }
+            <span class="highlight">catch</span> (TimeoutException) { <span class="comment">/* Veri bekleniyor */</span> }
+        }
+    }
+
+    <span class="highlight">void</span> ParseData(<span class="highlight">string</span> data)
+    {
+        <span class="highlight">string</span>[] splitValues = data.Split(<span class="string">','</span>);
+
+        <span class="highlight">if</span> (splitValues.Length >= 4)
+        {
+            <span class="highlight">try</span>
+            {
+                <span class="highlight">int</span> joyX = <span class="highlight">int</span>.Parse(splitValues[0]);
+                <span class="highlight">int</span> joyY = <span class="highlight">int</span>.Parse(splitValues[1]);
+                <span class="highlight">int</span> pot = <span class="highlight">int</span>.Parse(splitValues[2]);
+                <span class="highlight">int</span> button = <span class="highlight">int</span>.Parse(splitValues[3]);
+
+                <span class="comment">// 0-1023 verisini -1 ile +1 aralığına dönüştür</span>
+                <span class="highlight">float</span> moveX = Mathf.InverseLerp(0, 1023, joyX) * 2 - 1;
+                <span class="highlight">float</span> moveY = Mathf.InverseLerp(0, 1023, joyY) * 2 - 1;
+                <span class="highlight">float</span> throttle = Mathf.InverseLerp(0, 1023, pot);
+
+                <span class="comment">// 3D Modele Uygula</span>
+                <span class="highlight">if</span> (targetObject != <span class="highlight">null</span>)
+                {
+                    Vector3 rot = <span class="highlight">new</span> Vector3(moveY * rotationSpeed, 0, -moveX * rotationSpeed);
+                    targetObject.Rotate(rot * Time.deltaTime);
+                }
+
+                <span class="highlight">if</span> (button == 0)
+                {
+                    Debug.Log(<span class="string">"Aksiyon Butonuna Basıldı! Gaz: "</span> + throttle);
+                }
+            }
+            <span class="highlight">catch</span> (FormatException) { <span class="comment">/* Hatalı paketleri atla */</span> }
+        }
+    }
+
+    <span class="highlight">void</span> OnApplicationQuit()
+    {
+        <span class="comment">// Unity kapandığında portu serbest bırak</span>
+        <span class="highlight">if</span> (_serialPort != <span class="highlight">null</span> && _serialPort.IsOpen)
+        {
+            _serialPort.Close();
+        }
+    }
+}</code></pre>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>Geleceğin teknolojisini tasarlayanlar için hazırlanmıştır. İyi çalışmalar dileriz!</p>
+    </footer>
+
+</body>
+          </html>
+          
