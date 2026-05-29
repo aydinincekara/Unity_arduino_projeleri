@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proje 5: Fiziksel Mesafe, Dijital Derinlik - Unity Arduino Entegrasyonu</title>
+    <style>
+        /* ANA TEMA RENKLERİ */
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-color: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --btn-bg: #334155;
+            --btn-hover: #475569;
+            --code-bg: #0b0f19;
+            
+            /* BİLGİLENDİRME KUTUSU RENKLERİ */
+            --info-color: #3b82f6;    
+            --warning-color: #f59e0b; 
+            --success-color: #10b981; 
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: 50px;
+        }
+
+        /* HEADER & ANASAYFA BUTONU (MOBİL UYUMLU) */
+        header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
+            padding: 30px 20px;
+            border-bottom: 4px solid var(--accent-color);
+        }
+
+        .header-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-titles {
+            flex: 1;
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            color: #ffffff;
+            margin-bottom: 5px;
+            line-height: 1.2;
+        }
+
+        header p { color: var(--accent-color); font-size: 1.1rem; }
+
+        .back-btn {
+            background-color: var(--btn-bg);
+            color: var(--text-main);
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            border: 1px solid var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .back-btn:hover {
+            background-color: var(--accent-color);
+            border-color: var(--accent-hover);
+            color: var(--bg-color);
+        }
+
+        .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
+
+        .section-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            width: 100%;
+        }
+
+        h2 {
+            color: var(--accent-color);
+            font-size: 1.6rem;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--btn-bg);
+            padding-bottom: 10px;
+        }
+        
+        h3 { color: #cbd5e1; margin-top: 20px; margin-bottom: 10px; }
+
+        /* RENKLİ BİLGİLENDİRME KUTULARI */
+        .alert-box {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 0.95rem;
+        }
+
+        .alert-info { background-color: rgba(59, 130, 246, 0.1); border-left: 5px solid var(--info-color); }
+        .alert-info strong { color: var(--info-color); }
+
+        .alert-warning { background-color: rgba(245, 158, 11, 0.1); border-left: 5px solid var(--warning-color); }
+        .alert-warning strong { color: var(--warning-color); }
+
+        .alert-success { background-color: rgba(16, 185, 129, 0.1); border-left: 5px solid var(--success-color); }
+        .alert-success strong { color: var(--success-color); }
+
+        ul { margin-left: 20px; color: var(--text-muted); margin-bottom: 15px;}
+        li { margin-bottom: 8px; }
+        strong { color: var(--text-main); }
+
+        /* KOD BLOKLARI TAŞMA (OVERFLOW) ÇÖZÜMÜ */
+        .code-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            background-color: var(--code-bg);
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-color);
+            margin: 15px 0;
+        }
+
+        pre {
+            padding: 20px;
+            font-family: 'Consolas', monospace;
+            font-size: 0.95rem;
+            color: #e2e8f0;
+            white-space: pre; 
+            margin: 0;
+        }
+
+        /* TABLO TAŞMA (OVERFLOW) ÇÖZÜMÜ */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+        
+        .schema-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 500px; 
+        }
+        .schema-table th, .schema-table td {
+            border: 1px solid var(--btn-bg);
+            padding: 10px;
+            text-align: left;
+        }
+        .schema-table th { background-color: var(--btn-hover); color: white; }
+
+        /* KAYNAKÇA VE QR KOD ALANI TASARIMI */
+        .download-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+            background-color: var(--code-bg);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--btn-bg);
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background-color: var(--success-color);
+            color: #ffffff;
+            padding: 15px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        .download-btn:hover {
+            background-color: #059669;
+            transform: translateY(-3px);
+        }
+
+        .qr-box {
+            width: 120px;
+            height: 120px;
+            background-color: var(--card-bg);
+            border: 2px dashed var(--text-muted);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            overflow: hidden;
+            padding: 5px;
+        }
+
+        .qr-box img {
+            max-width: 100%;
+            max-height: 100%;
+            display: block;
+            border-radius: 4px;
+        }
+
+        /* MOBİL MEDYA SORGULARI (RESPONSIVE) */
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                text-align: center;
+            }
+            .back-btn {
+                align-self: flex-start;
+                margin-bottom: 10px;
+            }
+            .download-container {
+                flex-direction: column;
+                justify-content: center;
+                text-align: center;
+            }
+            .section-card {
+                padding: 20px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-container">
+            <a href="../index.html" class="back-btn">
+                <span>&#8592;</span> Anasayfa
+            </a>
+            <div class="header-titles">
+                <h1>Proje 5: Fiziksel Mesafe, Dijital Derinlik</h1>
+                <p>Ultrasonik Sensör (HC-SR04) ile Unity Kamera Kontrolü</p>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <div class="section-card">
+            <h2>🎯 Proje Hakkında</h2>
+            <p>Bu projede bir yarasa veya denizaltı gibi "ses dalgalarını" kullanarak mesafe ölçeceğiz! HC-SR04 ultrasonik sensörden okuduğumuz fiziksel mesafe değerini (santimetre cinsinden) Unity'ye aktararak, ana kameranın (Main Camera) "Field of View" (Görüş Açısı/Zoom) değerini el hareketlerimizle gerçek zamanlı olarak kontrol edeceğiz. Elinizi sensöre yaklaştırdığınızda dijital dünya da size yaklaşacak!</p>
+            
+            <div class="alert-box alert-info">
+                <strong>💡 Hap Bilgi:</strong> HC-SR04 sensörü insan kulağının duyamayacağı frekansta (ultrasonik) bir ses dalgası gönderir (Trig) ve bu ses bir cisme çarpıp geri döndüğünde dinler (Echo). Sesin gidiş-dönüş süresi hesaplanarak aradaki mesafe cm cinsinden bulunur.
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h2>🛠️ Gerekli Donanımlar ve Yazılımlar</h2>
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 250px;">
+                    <h3>Donanım Listesi</h3>
+                    <ul>
+                        <li><strong>1x</strong> Arduino UNO veya Nano</li>
+                        <li><strong>1x</strong> HC-SR04 Ultrasonik Mesafe Sensörü</li>
+                        <li><strong>1x</strong> Breadboard</li>
+                        <li>Jumper Kablolar (Dişi-Erkek ve Erkek-Erkek)</li>
+                    </ul>
+                </div>
+                <div style="flex: 1; min-width: 250px;">
+                    <h3>Yazılım ve Kütüphaneler</h3>
+                    <ul>
+                        <li><strong>IDE:</strong> Arduino IDE & Unity 3D</li>
+                        <li><strong>Arduino:</strong> Özel bir kütüphane gerektirmez (PulseIn komutu kullanılır).</li>
+                        <li><strong>Unity:</strong> <code>System.IO.Ports</code> ve <code>Camera.main</code></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h2>🔌 Bağlantı Şeması</h2>
+            <p>HC-SR04 sensörünün 4 adet pini vardır. Bağlantıları şu şekilde yapın:</p>
+            
+            <div class="table-responsive">
+                <table class="schema-table">
+                    <tr>
+                        <th>Sensör Pini</th>
+                        <th>Arduino Pini</th>
+                        <th>Açıklama</th>
+                    </tr>
+                    <tr>
+                        <td>VCC</td>
+                        <td>5V</td>
+                        <td>Sensörün ihtiyaç duyduğu güç (5 Volt)</td>
+                    </tr>
+                    <tr>
+                        <td>Trig (Trigger)</td>
+                        <td>D9 (Digital 9)</td>
+                        <td>Ses dalgasını "ateşleyen" (gönderen) pin</td>
+                    </tr>
+                    <tr>
+                        <td>Echo</td>
+                        <td>D10 (Digital 10)</td>
+                        <td>Geri dönen yankıyı "dinleyen" pin</td>
+                    </tr>
+                    <tr>
+                        <td>GND</td>
+                        <td>GND</td>
+                        <td>Topraklama / Eksi kutup</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="alert-box alert-warning">
+                <strong>⚠️ Dikkat Edilmesi Gerekenler:</strong> Sensörü breadboard'a takarken VCC ile GND pinlerini ters bağlamamaya çok dikkat edin, sensör anında ısınarak bozulabilir. Ayrıca sensörün iki gözünün önünün tamamen açık olduğundan emin olun.
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h2>⚙️ Nasıl Yapılır? (Adım Adım)</h2>
+            
+            <h3>Adım 1: Arduino Kodunu Yükleme</h3>
+            <p>Aşağıdaki kod Trig pininden sinyal yollar, Echo pininden dinler ve formül ile santimetre (cm) hesabı yaparak sonucu bilgisayara gönderir.</p>
+            
+            <div class="code-wrapper">
+<pre>const int trigPin = 9;
+const int echoPin = 10;
+
+long sure;
+int mesafe;
+
+void setup() {
+  pinMode(trigPin, OUTPUT); // Ses gönderici çıkış
+  pinMode(echoPin, INPUT);  // Yankı dinleyici giriş
+  Serial.begin(9600);
+}
+
+void loop() {
+  // Trig pinini temizle ve 10 mikrosaniye boyunca ses dalgası gönder
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  // Echo pininden dönen dalganın süresini oku
+  sure = pulseIn(echoPin, HIGH);
+
+  // Sesin hızına göre (havada yaklaşık 340 m/s) mesafeyi cm'ye çevir
+  mesafe = sure * 0.034 / 2;
+
+  // Güvenlik: Sadece anlamlı değerleri (2cm ile 200cm arası) gönder
+  if(mesafe > 2 && mesafe < 200) {
+    Serial.println(mesafe);
+  }
+
+  // Sensörü yormamak için kısa bekleme
+  delay(50);
+}</pre>
+            </div>
+
+            <h3>Adım 2: Unity Tarafında Veriyi İşleme</h3>
+            <p>Unity'de yeni bir C# betiği oluşturun (adını <code>MesafeKameraKontrol</code> yapabilirsiniz) ve bunu sahnedeki <strong>Main Camera</strong> nesnesine sürükleyin.</p>
+            
+            <div class="code-wrapper">
+<pre>using UnityEngine;
+using System.IO.Ports;
+
+public class MesafeKameraKontrol : MonoBehaviour {
+    SerialPort port = new SerialPort("COM3", 9600); // Arduino portunuz
+    private Camera anaKamera;
+    private float hedefZoom;
+
+    void Start() {
+        anaKamera = GetComponent&lt;Camera&gt;();
+        hedefZoom = anaKamera.fieldOfView; // Başlangıç açısını al
+        
+        if(!port.IsOpen) port.Open();
+        port.ReadTimeout = 50;
+    }
+
+    void Update() {
+        if (port.IsOpen) {
+            try {
+                string gelenVeri = port.ReadLine();
+                float fizikselMesafe = float.Parse(gelenVeri);
+
+                // Sensörden gelen 5cm ile 50cm arası değeri,
+                // Kameranın 20 ile 60 FOV (Zoom) değeri arasına haritala (Mapping)
+                hedefZoom = Mathf.Clamp(fizikselMesafe + 20f, 20f, 80f);
+            } 
+            catch (System.Exception) { /* Veri gecikmesi yoksayılır */ }
+        }
+
+        // Mathf.Lerp kullanarak zoom geçişini "Pürüzsüz (Smooth)" hale getiriyoruz
+        // Aksi takdirde sensördeki ufak oynamalar kamerayı titretir!
+        anaKamera.fieldOfView = Mathf.Lerp(anaKamera.fieldOfView, hedefZoom, Time.deltaTime * 5f);
+    }
+
+    void OnApplicationQuit() {
+        if(port.IsOpen) port.Close();
+    }
+}</pre>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h2>🚀 Tavsiyeler ve Basit Öneriler</h2>
+            
+            <div class="alert-box alert-success">
+                <strong>✨ Geliştirme Önerisi 1:</strong> <code>Mathf.Lerp</code> fonksiyonu donanım projelerinin kurtarıcısıdır! Sensörden gelen anlık hatalı verileri veya elinizin hafif titremelerini absorbe eder, geçişleri pürüzsüzleştirir. Bu projede Lerp hızını (<code>Time.deltaTime * 5f</code>) değiştirerek tepki süresini ayarlayabilirsiniz.
+            </div>
+
+            <div class="alert-box alert-success">
+                <strong>✨ Geliştirme Önerisi 2:</strong> Bu kodu sadece kamera için kullanmak zorunda değilsiniz. Kodu sahnedeki bir 3D karaktere atayıp <code>anaKamera.fieldOfView</code> yerine <code>transform.position = new Vector3(x, hedefZoom, z);</code> yazarak, elinizle karakteri ileri-geri yürütebilirsiniz (Jedi Gücü/Force etkisi!).
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h2>📥 Kaynakça ve Proje Dosyaları</h2>
+            <p>Bu projeye ait Arduino (ino) kodlarını, Unity sahne yedeğini (unitypackage) aşağıdan indirebilirsiniz.</p>
+            
+            <div class="download-container">
+                <a href="../kaynaklar/proje5_kaynak.rar" class="download-btn">
+                    <span>📦</span> Kaynak Dosyalarını İndir (.rar)
+                </a>
+
+                <div class="qr-box">
+                    <img src="" alt="QR Kod">
+                    <span style="display:block; margin-top:5px;">Mobil Cihazda<br>Görüntüle</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
