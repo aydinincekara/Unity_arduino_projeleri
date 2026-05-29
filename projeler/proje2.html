@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proje 2: Akıllı Kontrolcü - Unity Arduino Entegrasyonu</title>
+    <style>
+        /* ANA TEMA RENKLERİ (index.html ile birebir aynı) */
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-color: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --btn-bg: #334155;
+            --btn-hover: #475569;
+            --code-bg: #0b0f19;
+            
+            /* RENKLİ BİLGİLENDİRME KUTULARI İÇİN RENKLER */
+            --info-color: #3b82f6;    /* Mavi - Hap Bilgi */
+            --warning-color: #f59e0b; /* Turuncu - Dikkat */
+            --success-color: #10b981; /* Yeşil - Tavsiye */
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: 50px;
+        }
+
+        /* HEADER & ANASAYFA BUTONU TASARIMI */
+        header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 4px solid var(--accent-color);
+            position: relative;
+        }
+
+        .back-btn {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: var(--btn-bg);
+            color: var(--text-main);
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            border: 1px solid var(--text-muted);
+        }
+
+        .back-btn:hover {
+            background-color: var(--accent-color);
+            border-color: var(--accent-hover);
+            color: var(--bg-color);
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            color: #ffffff;
+            margin-bottom: 5px;
+        }
+
+        header p { color: var(--accent-color); font-size: 1.1rem; }
+
+        .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
+
+        .section-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        h2 {
+            color: var(--accent-color);
+            font-size: 1.6rem;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--btn-bg);
+            padding-bottom: 10px;
+        }
+        
+        h3 { color: #cbd5e1; margin-top: 20px; margin-bottom: 10px; }
+
+        /* RENKLİ BİLGİLENDİRME KUTULARI (HAP BİLGİ, DİKKAT, TAVSİYE) */
+        .alert-box {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 0.95rem;
+        }
+
+        .alert-info {
+            background-color: rgba(59, 130, 246, 0.1);
+            border-left: 5px solid var(--info-color);
+        }
+        .alert-info strong { color: var(--info-color); }
+
+        .alert-warning {
+            background-color: rgba(245, 158, 11, 0.1);
+            border-left: 5px solid var(--warning-color);
+        }
+        .alert-warning strong { color: var(--warning-color); }
+
+        .alert-success {
+            background-color: rgba(16, 185, 129, 0.1);
+            border-left: 5px solid var(--success-color);
+        }
+        .alert-success strong { color: var(--success-color); }
+
+        /* LİSTELER VE KOD BLOKLARI */
+        ul { margin-left: 20px; color: var(--text-muted); margin-bottom: 15px;}
+        li { margin-bottom: 8px; }
+        strong { color: var(--text-main); }
+
+        pre {
+            background-color: var(--code-bg);
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Consolas', monospace;
+            font-size: 0.95rem;
+            border-left: 4px solid var(--accent-color);
+            margin: 15px 0;
+        }
+
+        /* BAĞLANTI ŞEMASI ALANI */
+        .schema-box {
+            background-color: var(--code-bg);
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            border: 2px dashed var(--btn-bg);
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+        
+        .schema-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .schema-table th, .schema-table td {
+            border: 1px solid var(--btn-bg);
+            padding: 10px;
+            text-align: left;
+        }
+        .schema-table th { background-color: var(--btn-hover); color: white; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="../index.html" class="back-btn">
+            <span>&#8592;</span> Anasayfa
+        </a>
+        <h1>Proje 2: Akıllı Kontrolcü</h1>
+        <p>Potansiyometre ve Buton ile 3D Nesne Manipülasyonu</p>
+    </header>
+
+    <div class="container">
+
+        <div class="section-card">
+            <h2>🎯 Proje Hakkında</h2>
+            <p>Bu projede, fiziksel dünyadaki çevresel bir hareketin (potansiyometreyi çevirme) dijital dünyadaki bir 3D nesnenin rotasyonunu (dönüşünü) nasıl etkilediğini göreceğiz. Ayrıca bir fiziksel butona basıldığında Unity içerisindeki nesnenin rengini veya boyutunu değiştirmeyi öğreneceğiz.</p>
+            
+            <div class="alert-box alert-info">
+                <strong>💡 Hap Bilgi:</strong> Analog sensörler (potansiyometre gibi) Arduino'da 0 ile 1023 arasında değer üretir. Bu değeri Unity'de 0 ile 360 derece arasına dönüştürerek (Mapping) tam bir tur dönüş sağlayacağız.
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h2>🛠️ Gerekli Donanımlar ve Yazılımlar</h2>
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 250px;">
+                    <h3>Donanım Listesi</h3>
+                    <ul>
+                        <li><strong>1x</strong> Arduino UNO veya Nano</li>
+                        <li><strong>1x</strong> 10K Ohm Potansiyometre</li>
+                        <li><strong>1x</strong> Push Buton (Yaylı Buton)</li>
+                        <li><strong>1x</strong> Breadboard</li>
+                        <li>Jumper Kablolar (Erkek-Erkek)</li>
+                    </ul>
+                </div>
+                <div style="flex: 1; min-width: 250px;">
+                    <h3>Yazılım ve Kütüphaneler</h3>
+                    <ul>
+                        <li><strong>IDE:</strong> Arduino IDE & Unity 3D</li>
+                        <li><strong>Unity Kütüphanesi:</strong> <code>System.IO.Ports</code></li>
+                        <li><strong>Arduino Kütüphanesi:</strong> Ekstra kütüphane gerekmez. Standart <code>Serial</code> kütüphanesi kullanılacaktır.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h2>🔌 Bağlantı Şeması</h2>
+            <p>Devrenizi kurarken aşağıdaki pin haritalandırmasını birebir uyguladığınızdan emin olun:</p>
+            
+            <table class="schema-table">
+                <tr>
+                    <th>Bileşen Pini</th>
+                    <th>Arduino Pini</th>
+                    <th>Açıklama</th>
+                </tr>
+                <tr>
+                    <td>Potansiyometre Sol Bacak</td>
+                    <td>5V</td>
+                    <td>Güç girişi</td>
+                </tr>
+                <tr>
+                    <td>Potansiyometre Orta Bacak</td>
+                    <td>A0 (Analog 0)</td>
+                    <td>Veri okuma (Sinyal)</td>
+                </tr>
+                <tr>
+                    <td>Potansiyometre Sağ Bacak</td>
+                    <td>GND</td>
+                    <td>Topraklama</td>
+                </tr>
+                <tr>
+                    <td>Buton 1. Bacak</td>
+                    <td>D2 (Digital 2)</td>
+                    <td>Kod içinde INPUT_PULLUP ile kullanılacak</td>
+                </tr>
+                <tr>
+                    <td>Buton 2. Bacak</td>
+                    <td>GND</td>
+                    <td>Topraklama</td>
+                </tr>
+            </table>
+
+            <div class="alert-box alert-warning">
+                <strong>⚠️ Dikkat Edilmesi Gerekenler:</strong> Buton bağlantısında harici bir direnç kullanmıyoruz. Bunun yerine Arduino'nun içindeki dahili direnci aktif etmek için kodda <code>pinMode(2, INPUT_PULLUP);</code> komutunu kullanmalıyız. Bu durumda buton boşta iken "1", basıldığında "0" değeri verir.
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h2>⚙️ Nasıl Yapılır? (Adım Adım)</h2>
+            
+            <h3>Adım 1: Arduino Kodunu Yükleme</h3>
+            <p>Devre bağlantılarını yaptıktan sonra aşağıdaki kodu Arduino'ya yükleyin. Bu kod, verileri <code>X,Y</code> formatında seri porta yazdırır.</p>
+<pre>void setup() {
+  Serial.begin(9600);
+  pinMode(2, INPUT_PULLUP); // Dahili direnci aktif et
+}
+
+void loop() {
+  int potDeger = analogRead(A0);
+  int butonDurum = digitalRead(2);
+
+  // Verileri virgülle birleştirip gönderiyoruz
+  Serial.print(potDeger);
+  Serial.print(",");
+  Serial.println(butonDurum);
+
+  delay(20); // Dalgalanmayı önlemek için kısa bekleme
+}</pre>
+
+            <h3>Adım 2: Unity Tarafında Veriyi İşleme</h3>
+            <p>Unity'de sahnede bir 3D Küp oluşturun ve aşağıdaki C# betiğini bu küpe atayın.</p>
+<pre>using UnityEngine;
+using System.IO.Ports;
+
+public class ObjeKontrol : MonoBehaviour {
+    SerialPort port = new SerialPort("COM3", 9600); // Kendi portunuzu yazın
+
+    void Start() {
+        port.Open();
+        port.ReadTimeout = 50;
+    }
+
+    void Update() {
+        if (port.IsOpen) {
+            try {
+                string veri = port.ReadLine();
+                string[] parcalar = veri.Split(',');
+                
+                if(parcalar.Length == 2) {
+                    float potVeri = float.Parse(parcalar[0]);
+                    int butonVeri = int.Parse(parcalar[1]);
+
+                    // Potansiyometre 0-1023 arası değer verir. Bunu 0-360 dereceye çeviriyoruz.
+                    float aci = (potVeri / 1023f) * 360f;
+                    transform.rotation = Quaternion.Euler(0, aci, 0);
+
+                    // Butona basıldığında (0 olduğunda) objeyi büyüt
+                    if(butonVeri == 0) {
+                        transform.localScale = new Vector3(2, 2, 2);
+                    } else {
+                        transform.localScale = new Vector3(1, 1, 1);
+                    }
+                }
+            } catch (System.Exception) { }
+        }
+    }
+
+    void OnApplicationQuit() {
+        if(port.IsOpen) port.Close();
+    }
+}</pre>
+        </div>
+
+        <div class="section-card">
+            <h2>🚀 Tavsiyeler ve Basit Öneriler</h2>
+            
+            <div class="alert-box alert-success">
+                <strong>✨ Geliştirme Önerisi 1:</strong> Unity sahnesinde kameranın arkasına güzel bir arka plan ekleyip, döndürdüğünüz 3D modeli kendi tasarladığınız bir uzay gemisine dönüştürebilirsiniz.
+            </div>
+            
+            <div class="alert-box alert-success">
+                <strong>✨ Geliştirme Önerisi 2:</strong> Potansiyometreden gelen değerler bazen fiziksel titremelerden dolayı Unity ekranında pırpır (titreme) yapabilir. C# içerisinde <code>Mathf.Lerp()</code> fonksiyonu kullanarak bu dönüşleri yağ gibi pürüzsüz hale getirebilirsiniz.
+            </div>
+        </div>
+
+    </div>
+
+</body>
+   </html>
+   
