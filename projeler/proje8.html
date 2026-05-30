@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proje 8: Fiziksel Anahtar, Dijital Kilit - Unity Arduino Entegrasyonu</title>
+    <style>
+        /* ANA TEMA RENKLERİ */
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-color: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --btn-bg: #334155;
+            --btn-hover: #475569;
+            --code-bg: #0b0f19;
+            
+            /* BİLGİLENDİRME KUTUSU RENKLERİ */
+            --info-color: #3b82f6;    
+            --warning-color: #f59e0b; 
+            --success-color: #10b981; 
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: 50px;
+        }
+
+        /* HEADER & ANASAYFA BUTONU */
+        header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
+            padding: 30px 20px;
+            border-bottom: 4px solid var(--accent-color);
+        }
+
+        .header-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-titles { flex: 1; }
+
+        header h1 {
+            font-size: 2.2rem;
+            color: #ffffff;
+            margin-bottom: 5px;
+            line-height: 1.2;
+        }
+
+        header p { color: var(--accent-color); font-size: 1.1rem; }
+
+        .back-btn {
+            background-color: var(--btn-bg);
+            color: var(--text-main);
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            border: 1px solid var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .back-btn:hover {
+            background-color: var(--accent-color);
+            border-color: var(--accent-hover);
+            color: var(--bg-color);
+        }
+
+        .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
+
+        .section-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            width: 100%;
+        }
+
+        h2 {
+            color: var(--accent-color);
+            font-size: 1.6rem;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--btn-bg);
+            padding-bottom: 10px;
+        }
+        
+        h3 { color: #cbd5e1; margin-top: 20px; margin-bottom: 10px; }
+
+        /* RENKLİ BİLGİLENDİRME KUTULARI */
+        .alert-box {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 0.95rem;
+        }
+
+        .alert-info { background-color: rgba(59, 130, 246, 0.1); border-left: 5px solid var(--info-color); }
+        .alert-info strong { color: var(--info-color); }
+
+        .alert-warning { background-color: rgba(245, 158, 11, 0.1); border-left: 5px solid var(--warning-color); }
+        .alert-warning strong { color: var(--warning-color); }
+
+        .alert-success { background-color: rgba(16, 185, 129, 0.1); border-left: 5px solid var(--success-color); }
+        .alert-success strong { color: var(--success-color); }
+
+        ul { margin-left: 20px; color: var(--text-muted); margin-bottom: 15px;}
+        li { margin-bottom: 8px; }
+        strong { color: var(--text-main); }
+
+        /* KOD BLOKLARI VE TABLOLAR */
+        .code-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            background-color: var(--code-bg);
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-color);
+            margin: 15px 0;
+        }
+
+        pre {
+            padding: 20px;
+            font-family: 'Consolas', monospace;
+            font-size: 0.95rem;
+            color: #e2e8f0;
+            white-space: pre; 
+            margin: 0;
+        }
+
+        .table-responsive { width: 100%; overflow-x: auto; margin-top: 15px; }
+        .schema-table { width: 100%; border-collapse: collapse; min-width: 500px; }
+        .schema-table th, .schema-table td { border: 1px solid var(--btn-bg); padding: 10px; text-align: left; }
+        .schema-table th { background-color: var(--btn-hover); color: white; }
+
+        /* KAYNAKÇA VE QR KOD ALANI */
+        .download-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+            background-color: var(--code-bg);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--btn-bg);
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background-color: var(--success-color);
+            color: #ffffff;
+            padding: 15px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        .download-btn:hover { background-color: #059669; transform: translateY(-3px); }
+
+        .qr-box {
+            width: 120px; height: 120px; background-color: var(--card-bg);
+            border: 2px dashed var(--text-muted); border-radius: 8px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; color: var(--text-muted); font-size: 0.8rem; overflow: hidden; padding: 5px;
+        }
+        .qr-box img { max-width: 100%; max-height: 100%; display: block; border-radius: 4px; }
+
+        @media (max-width: 768px) {
+            .header-container { flex-direction: column; text-align: center; }
+            .back-btn { align-self: flex-start; margin-bottom: 10px; }
+            .download-container { flex-direction: column; justify-content: center; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-container">
+            <a href="../index.html" class="back-btn">
+                <span>&#8592;</span> Anasayfa
+            </a>
+            <div class="header-titles">
+                <h1>Proje 8: Fiziksel Anahtar, Dijital Kilit</h1>
+                <p>RC522 RFID Modülü ile Unity Kimlik Doğrulama ve Güvenlik Sistemi</p>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <div class="section-card">
+            <h2>🎯 Proje Hakkında</h2>
+            <p>Sanal dünyada yer alan kilitli bir kapıyı, bir sunucu terminalini veya oyun içi bir sandığı açmak için klavye şifresi girmek yerine cebinizdeki gerçek bir RFID kartı kullanmaya ne dersiniz? Bu projede <strong>RC522 RFID okuyucu</strong> üzerinden kartın UID (Eşsiz Kimlik) kodunu okuyup Unity'ye aktaracağız. Unity bu kodu kendi veri tabanındaki (kod içindeki) yetkili kodlarla karşılaştırıp sistem erişimi verecek.</p>
+            
+            <div class="alert-box alert-info">
+                <strong>💡 Hap Bilgi:</strong> RC522 modülü, Arduino ile bir önceki projede kullandığımız I2C yerine <strong>SPI (Serial Peripheral Interface)</strong> adı verilen farklı ve çok daha hızlı bir protokol üzerinden haberleşir. Bu yüzden bağlantı pinleri özeldir (MISO, MOSI, SCK).
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h2>🛠️ Gerekli Donanımlar ve Yazılımlar</h2>
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 250px;">
+                    <h3>Donanım Listesi</h3>
+                    <ul>
+                        <li><strong>1x</strong> Arduino UNO veya Nano</li>
+                        <li><strong>1x</strong> RC522 RFID Okuyucu Modülü</li>
+                        <li><strong>1x</strong> 13.56MHz RFID Kart veya Anahtarlık (Tag)</li>
+                        <li>Jumper Kablolar (Dişi-Erkek)</li>
+                    </ul>
+                </div>
+                <div style="flex: 1; min-width: 250px;">
+                    <h3>Yazılım ve Kütüphaneler</h3>
+                    <ul>
+                        <li><strong>Arduino Kütüphanesi:</strong> <code>MFRC522.h</code> (Kütüphane yöneticisinden indirilmelidir) ve <code>SPI.h</code></li>
+                        <li><strong>Unity Kütüphanesi:</strong> <code>System.IO.Ports</code></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h2>🔌 Bağlantı Şeması</h2>
+            <p>SPI haberleşmesi için Arduino UNO ve Nano'da pinler sabittir. Lütfen aşağıdaki şemaya tam uyum sağlayın:</p>
+            
+            <div class="table-responsive">
+                <table class="schema-table">
+                    <tr>
+                        <th>RC522 Pini</th>
+                        <th>Arduino Pini</th>
+                        <th>Açıklama</th>
+                    </tr>
+                    <tr>
+                        <td>3.3V</td>
+                        <td>3.3V</td>
+                        <td><strong>ÇOK ÖNEMLİ!</strong> Modül 5V ile bozulur, kesinlikle 3.3V pinine bağlanmalıdır.</td>
+                    </tr>
+                    <tr>
+                        <td>RST (Reset)</td>
+                        <td>D9</td>
+                        <td>Yeniden başlatma pini</td>
+                    </tr>
+                    <tr>
+                        <td>GND</td>
+                        <td>GND</td>
+                        <td>Topraklama</td>
+                    </tr>
+                    <tr>
+                        <td>MISO</td>
+                        <td>D12</td>
+                        <td>Master In Slave Out (Gelen Veri Hattı)</td>
+                    </tr>
+                    <tr>
+                        <td>MOSI</td>
+                        <td>D11</td>
+                        <td>Master Out Slave In (Giden Veri Hattı)</td>
+                    </tr>
+                    <tr>
+                        <td>SCK</td>
+                        <td>D13</td>
+                        <td>Serial Clock (Saat Darbesi Hattı)</td>
+                    </tr>
+                    <tr>
+                        <td>SDA (SS)</td>
+                        <td>D10</td>
+                        <td>Slave Select (Çip Seçim Pini)</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="alert-box alert-warning">
+                <strong>⚠️ Dikkat Edilmesi Gerekenler:</strong> Modül 3.3V ile çalışır. VCC veya 5V pinine takarsanız RC522 modülü kalıcı olarak yanabilir. Veri pinleri 5V toleranslıdır (direkt D10-D13'e takılabilir), ancak güç bağlantısı kesinlikle 3.3V olmalıdır.
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h2>⚙️ Nasıl Yapılır? (Adım Adım)</h2>
+            
+            <h3>Adım 1: Arduino Kodunu Yükleme</h3>
+            <p>Kütüphane Yöneticisinden "MFRC522 by GithubCommunity" kütüphanesini kurun ve aşağıdaki kodu yükleyin. Bu kod, okunan kartın kimliğini (Örn: A1 B2 C3 D4) aralarında boşluk bırakmadan (Örn: A1B2C3D4) Unity'ye gönderir.</p>
+            
+            <div class="code-wrapper">
+<pre>#include &lt;SPI.h&gt;
+#include &lt;MFRC522.h&gt;
+
+#define SS_PIN 10
+#define RST_PIN 9
+
+MFRC522 rfid(SS_PIN, RST_PIN);
+
+void setup() {
+  Serial.begin(9600);
+  SPI.begin(); // SPI veriyolunu başlat
+  rfid.PCD_Init(); // RFID okuyucuyu başlat
+}
+
+void loop() {
+  // Yeni kart okutulmadıysa başa dön
+  if (!rfid.PICC_IsNewCardPresent() || !rfid.PICC_ReadCardSerial()) {
+    return;
+  }
+
+  String kartUID = "";
+  // 4 byte'lık UID kodunu oku ve Hexadecimal (16'lık) sisteme çevir
+  for (byte i = 0; i &lt; rfid.uid.size; i++) {
+    kartUID += String(rfid.uid.uidByte[i] &lt; 0x10 ? "0" : "");
+    kartUID += String(rfid.uid.uidByte[i], HEX);
+  }
+
+  kartUID.toUpperCase(); // Tüm harfleri büyüt
+  
+  // Sadece UID kodunu seri porta yazdır
+  Serial.println(kartUID);
+
+  // Aynı kartın defalarca okunmasını engellemek için kartı uykuya al
+  rfid.PICC_HaltA();
+}</pre>
+            </div>
+
+            <h3>Adım 2: Unity Tarafında Veriyi İşleme</h3>
+            <p>Unity'de sisteme giriş yapılmasını temsil eden bir "Yetkili Girişi" arayüzü veya sanal bir kapı (Door) oluşturun ve bu kodu atayın. <code>yetkiliKartUID</code> kısmına, kendi kartınızın UID kodunu yazmayı unutmayın (Bunu Arduino Serial Monitor'den öğrenebilirsiniz).</p>
+            
+            <div class="code-wrapper">
+<pre>using UnityEngine;
+using System.IO.Ports;
+
+public class RFIDGuvenlik : MonoBehaviour {
+    SerialPort port = new SerialPort("COM3", 9600); 
+    
+    // Geçerli kartın kodunu buraya yazın (Örn: 23A5B802)
+    public string yetkiliKartUID = "KENDI_KART_KODUNUZU_YAZIN";
+
+    void Start() {
+        if(!port.IsOpen) port.Open();
+        port.ReadTimeout = 50;
+    }
+
+    void Update() {
+        if (port.IsOpen) {
+            try {
+                // Arduino'dan gelen kart okuma verisini yakala
+                string okunanKart = port.ReadLine().Trim(); 
+                
+                if (!string.IsNullOrEmpty(okunanKart)) {
+                    Debug.Log("Okunan Kart UID: " + okunanKart);
+                    
+                    if (okunanKart == yetkiliKartUID) {
+                        ErisimOnaylandi();
+                    } else {
+                        ErisimReddedildi();
+                    }
+                }
+            } 
+            catch (System.TimeoutException) { /* Gecikmeleri yoksay */ }
+        }
+    }
+
+    void ErisimOnaylandi() {
+        Debug.Log("🟢 ERIŞIM ONAYLANDI! Kilit Açılıyor...");
+        // Burada kapı animasyonunu çalıştırabilir veya sahne geçişi yapabilirsiniz.
+        // GetComponent&lt;Animator&gt;().SetTrigger("KapiAc");
+    }
+
+    void ErisimReddedildi() {
+        Debug.Log("🔴 YETKISIZ KART! Giriş Reddedildi.");
+        // Burada bir hata sesi (AudioSource.Play) çalabilirsiniz.
+    }
+
+    void OnApplicationQuit() {
+        if(port.IsOpen) port.Close();
+    }
+}</pre>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h2>🚀 Tavsiyeler ve Basit Öneriler</h2>
+            
+            <div class="alert-box alert-success">
+                <strong>✨ Geliştirme Önerisi 1: Siber Güvenlik Masası Uygulaması:</strong> Fiziksel bir sunucu masası (Network Topology Desk) maketi yapıp üzerine bu RFID okuyucuları yerleştirebilirsiniz. Öğrenciler "Yetkilendirme Kartı"nı (RFID) doğru istasyona okuttuklarında Unity ekranındaki ağ haritasında ilgili sanal sunucunun (Node) kilidi açılabilir veya bir siber saldırı engellenebilir.
+            </div>
+
+            <div class="alert-box alert-success">
+                <strong>✨ Geliştirme Önerisi 2:</strong> Projeyi çift yönlü hale getirmek için 3. projedeki LED mantığını ekleyebilirsiniz. Doğru kart okutulduğunda Unity Arduino'ya '1' göndersin ve masadaki "Yeşil LED" yansın, yanlış kartta '0' göndersin ve "Kırmızı LED" yansın.
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h2>📥 Kaynakça ve Proje Dosyaları</h2>
+            <p>Bu projeye ait Arduino (ino) kodlarını, Unity sahne yedeğini (unitypackage) aşağıdan indirebilirsiniz.</p>
+            
+            <div class="download-container">
+                <a href="../kaynaklar/proje8_kaynak.rar" class="download-btn">
+                    <span>📦</span> Kaynak Dosyalarını İndir (.rar)
+                </a>
+
+                <div class="qr-box">
+                    <img src="" alt="QR Kod">
+                    <span style="display:block; margin-top:5px;">Mobil Cihazda<br>Görüntüle</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
