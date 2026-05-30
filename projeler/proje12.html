@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proje 12: Gizli Şifreler - Unity Arduino Entegrasyonu</title>
+    <style>
+        /* ANA TEMA RENKLERİ */
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-color: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --btn-bg: #334155;
+            --btn-hover: #475569;
+            --code-bg: #0b0f19;
+            
+            /* BİLGİLENDİRME KUTUSU RENKLERİ */
+            --info-color: #3b82f6;    
+            --warning-color: #f59e0b; 
+            --success-color: #10b981; 
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: 50px;
+        }
+
+        /* HEADER & ANASAYFA BUTONU */
+        header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
+            padding: 30px 20px;
+            border-bottom: 4px solid var(--accent-color);
+        }
+
+        .header-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-titles { flex: 1; }
+
+        header h1 {
+            font-size: 2.2rem;
+            color: #ffffff;
+            margin-bottom: 5px;
+            line-height: 1.2;
+        }
+
+        header p { color: var(--accent-color); font-size: 1.1rem; }
+
+        .back-btn {
+            background-color: var(--btn-bg);
+            color: var(--text-main);
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            border: 1px solid var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .back-btn:hover {
+            background-color: var(--accent-color);
+            border-color: var(--accent-hover);
+            color: var(--bg-color);
+        }
+
+        .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
+
+        .section-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            width: 100%;
+        }
+
+        h2 {
+            color: var(--accent-color);
+            font-size: 1.6rem;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--btn-bg);
+            padding-bottom: 10px;
+        }
+        
+        h3 { color: #cbd5e1; margin-top: 20px; margin-bottom: 10px; }
+
+        /* RENKLİ BİLGİLENDİRME KUTULARI */
+        .alert-box {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 0.95rem;
+        }
+
+        .alert-info { background-color: rgba(59, 130, 246, 0.1); border-left: 5px solid var(--info-color); }
+        .alert-info strong { color: var(--info-color); }
+
+        .alert-warning { background-color: rgba(245, 158, 11, 0.1); border-left: 5px solid var(--warning-color); }
+        .alert-warning strong { color: var(--warning-color); }
+
+        .alert-success { background-color: rgba(16, 185, 129, 0.1); border-left: 5px solid var(--success-color); }
+        .alert-success strong { color: var(--success-color); }
+
+        ul { margin-left: 20px; color: var(--text-muted); margin-bottom: 15px;}
+        li { margin-bottom: 8px; }
+        strong { color: var(--text-main); }
+
+        /* KOD BLOKLARI VE TABLOLAR */
+        .code-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            background-color: var(--code-bg);
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-color);
+            margin: 15px 0;
+        }
+
+        pre {
+            padding: 20px;
+            font-family: 'Consolas', monospace;
+            font-size: 0.95rem;
+            color: #e2e8f0;
+            white-space: pre; 
+            margin: 0;
+        }
+
+        .table-responsive { width: 100%; overflow-x: auto; margin-top: 15px; }
+        .schema-table { width: 100%; border-collapse: collapse; min-width: 500px; }
+        .schema-table th, .schema-table td { border: 1px solid var(--btn-bg); padding: 10px; text-align: left; }
+        .schema-table th { background-color: var(--btn-hover); color: white; }
+
+        /* KAYNAKÇA VE QR KOD ALANI */
+        .download-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+            background-color: var(--code-bg);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--btn-bg);
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background-color: var(--success-color);
+            color: #ffffff;
+            padding: 15px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        .download-btn:hover { background-color: #059669; transform: translateY(-3px); }
+
+        .qr-box {
+            width: 120px; height: 120px; background-color: var(--card-bg);
+            border: 2px dashed var(--text-muted); border-radius: 8px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; color: var(--text-muted); font-size: 0.8rem; overflow: hidden; padding: 5px;
+        }
+        .qr-box img { max-width: 100%; max-height: 100%; display: block; border-radius: 4px; }
+
+        @media (max-width: 768px) {
+            .header-container { flex-direction: column; text-align: center; }
+            .back-btn { align-self: flex-start; margin-bottom: 10px; }
+            .download-container { flex-direction: column; justify-content: center; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-container">
+            <a href="../index.html" class="back-btn">
+                <span>&#8592;</span> Anasayfa
+            </a>
+            <div class="header-titles">
+                <h1>Proje 12: Gizli Şifreler (Şifre Paneli)</h1>
+                <p>Membran Keypad ile Unity'de Kilit ve Durum Makinesi Kontrolü</p>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <div class="section-card">
+            <h2>🎯 Proje Hakkında</h2>
+            <p>Kaçış odalarında (Escape Room) veya macera oyunlarında gizli kasaları açmak harika bir histir! Bu projede 4x3 boyutunda bir membran tuş takımı kullanacağız. Oyuncu tuşlara bastıkça Unity tarafında bir "Şifre Dizisi (String)" oluşacak. Oyuncu belirlediğimiz 4 haneli şifreyi doğru girdiğinde sanal kilit açılacak, yanlış girdiğinde ise kırmızı bir uyarı vererek sistem sıfırlanacak.</p>
+            
+            <div class="alert-box alert-info">
+                <strong>💡 Hap Bilgi (Matris Tarama):</strong> Keypad'in içinde her tuş için ayrı bir kablo yoktur. 12 tuş için 7 kablo (4 Satır, 3 Sütun) bulunur. Arduino, satırlara sırayla elektrik verip sütunlardan okuma yaparak (Matris Tarama Yöntemi) hangi tuşa basıldığını koordinat düzlemi gibi tespit eder.
+            </div>
+            
+            
+        </div>
+
+        <div class="section-card">
+            <h2>🛠️ Gerekli Donanımlar ve Yazılımlar</h2>
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 250px;">
+                    <h3>Donanım Listesi</h3>
+                    <ul>
+                        <li><strong>1x</strong> Arduino UNO veya Nano</li>
+                        <li><strong>1x</strong> 4x3 Membran Keypad (Tuş Takımı)</li>
+                        <li>Jumper Kablolar (Erkek-Erkek)</li>
+                    </ul>
+                </div>
+                <div style="flex: 1; min-width: 250px;">
+                    <h3>Yazılım ve Kütüphaneler</h3>
+                    <ul>
+                        <li><strong>Arduino IDE:</strong> <code>Keypad.h</code> kütüphanesi (Kütüphane yöneticisinden indirilmelidir).</li>
+                        <li><strong>Unity:</strong> <code>System.IO.Ports</code> ve UI metin güncellemeleri için <code>UnityEngine.UI</code> (veya TextMeshPro).</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h2>🔌 Bağlantı Şeması</h2>
+            <p>Membran keypad'in altından çıkan 7 adet pin (veya 4x4 ise 8 pin) bulunur. Soldan sağa doğru ilk 4 pin Satırları (Rows), son 3 pin ise Sütunları (Cols) temsil eder.</p>
+            
+            <div class="table-responsive">
+                <table class="schema-table">
+                    <tr>
+                        <th>Keypad Pini (Soldan Sağa)</th>
+                        <th>Görevi</th>
+                        <th>Arduino Pini</th>
+                    </tr>
+                    <tr><td>Pin 1 (En Sol)</td><td>Satır 1 (R1)</td><td>D9</td></tr>
+                    <tr><td>Pin 2</td><td>Satır 2 (R2)</td><td>D8</td></tr>
+                    <tr><td>Pin 3</td><td>Satır 3 (R3)</td><td>D7</td></tr>
+                    <tr><td>Pin 4</td><td>Satır 4 (R4)</td><td>D6</td></tr>
+                    <tr><td>Pin 5</td><td>Sütun 1 (C1)</td><td>D5</td></tr>
+                    <tr><td>Pin 6</td><td>Sütun 2 (C2)</td><td>D4</td></tr>
+                    <tr><td>Pin 7 (En Sağ)</td><td>Sütun 3 (C3)</td><td>D3</td></tr>
+                </table>
+            </div>
+
+            <div class="alert-box alert-warning">
+                <strong>⚠️ Dikkat Edilmesi Gerekenler:</strong> Güç (5V) veya GND bağlantısı YAPMIYORUZ! Keypad sadece dijital pinlere bağlanır, elektriği Arduino kütüphanesi otomatik yönetir.
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h2>⚙️ Nasıl Yapılır? (Adım Adım)</h2>
+            
+            <h3>Adım 1: Arduino Kodunu Yükleme</h3>
+            <p>Arduino Kütüphane Yöneticisinden <strong>Keypad by Mark Stanley</strong> kütüphanesini kurun. Aşağıdaki kod, basılan her tuşu tek bir karakter olarak (Örn: '5') Unity'ye gönderir.</p>
+            
+            <div class="code-wrapper">
+<pre>#include &lt;Keypad.h&gt;
+
+const byte ROWS = 4; // 4 Satır
+const byte COLS = 3; // 3 Sütun
+
+// Tuş takımının haritasını çıkarıyoruz
+char keys[ROWS][COLS] = {
+  {'1','2','3'},
+  {'4','5','6'},
+  {'7','8','9'},
+  {'*','0','#'}
+};
+
+// Keypad pinlerini Arduino pinleriyle eşleştiriyoruz (Tablodaki sırayla)
+byte rowPins[ROWS] = {9, 8, 7, 6}; 
+byte colPins[COLS] = {5, 4, 3}; 
+
+// Keypad nesnesini oluştur
+Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
+
+void setup() {
+  Serial.begin(9600);
+}
+
+void loop() {
+  // Basılan tuşu oku
+  char key = keypad.getKey();
+
+  // Eğer bir tuşa basıldıysa...
+  if (key) {
+    Serial.println(key); // Tuşu Unity'ye gönder
+  }
+}</pre>
+            </div>
+
+            <h3>Adım 2: Unity Tarafında Veriyi İşleme</h3>
+            <p>Unity'de sahnede bir Kapı objesi ve ekranda (Canvas) şifreyi gösterecek bir <strong>Text</strong> (UI) oluşturun. Aşağıdaki betiği boş bir objeye atayın.</p>
+            
+            <div class="code-wrapper">
+<pre>using UnityEngine;
+using UnityEngine.UI;
+using System.IO.Ports;
+
+public class SifreliKapi : MonoBehaviour {
+    SerialPort port = new SerialPort("COM3", 9600);
+    
+    [Header("Şifre Ayarları")]
+    public string dogruSifre = "1453"; // Hedef şifremiz
+    private string girilenSifre = "";  // Oyuncunun o an girdiği şifre hafızası
+    
+    [Header("Arayüz (UI)")]
+    public Text ekranMetni; // Unity'deki UI Text objesi
+
+    void Start() {
+        if(!port.IsOpen) port.Open();
+        port.ReadTimeout = 50;
+        EkranGuncelle("Sifre Girin");
+    }
+
+    void Update() {
+        if (port.IsOpen) {
+            try {
+                // Arduino'dan gelen TEK KARAKTERLİ stringi oku
+                string gelenTus = port.ReadLine().Trim();
+
+                if (!string.IsNullOrEmpty(gelenTus)) {
+                    TusaBasildi(gelenTus);
+                }
+            } 
+            catch (System.TimeoutException) { /* Gecikmeleri yoksay */ }
+        }
+    }
+
+    void TusaBasildi(string tus) {
+        // Eğer '*' tuşuna basılırsa şifreyi sıfırla (Silme Tuşu)
+        if (tus == "*") {
+            girilenSifre = "";
+            EkranGuncelle("Sifirlandi");
+            return;
+        }
+
+        // Eğer '#' tuşuna basılırsa işlemi onayla (Enter Tuşu)
+        if (tus == "#") {
+            SifreyiKontrolEt();
+            return;
+        }
+
+        // 4 haneden fazla girilmesini engelle
+        if (girilenSifre.Length < 4) {
+            girilenSifre += tus; // Yeni tuşu mevcut şifrenin sonuna ekle
+            EkranGuncelle(girilenSifre);
+            
+            // 4 hane dolduğu an otomatik kontrol et
+            if(girilenSifre.Length == 4) {
+                SifreyiKontrolEt();
+            }
+        }
+    }
+
+    void SifreyiKontrolEt() {
+        if (girilenSifre == dogruSifre) {
+            EkranGuncelle("KILIT ACILDI!");
+            Debug.Log("Başarılı! Kapı Açılıyor...");
+            // GetComponent&lt;Animator&gt;().SetTrigger("KapiAc");
+        } else {
+            EkranGuncelle("HATALI SIFRE!");
+            Debug.Log("Hata! Yanlış Şifre.");
+            girilenSifre = ""; // Şifreyi hatalı girdikten sonra hafızayı temizle
+        }
+    }
+
+    void EkranGuncelle(string mesaj) {
+        if(ekranMetni != null) {
+            ekranMetni.text = mesaj;
+        }
+    }
+
+    void OnApplicationQuit() {
+        if(port.IsOpen) port.Close();
+    }
+}</pre>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h2>🚀 Tavsiyeler ve Basit Öneriler</h2>
+            
+            <div class="alert-box alert-success">
+                <strong>✨ Geliştirme Önerisi 1: Görsel ve İşitsel Geri Bildirim:</strong> Oyuncu tuşlara her bastığında Unity içerisinden kısa bir 'Bip' sesi (AudioSource.PlayOneShot) çalın. Şifre doğru girildiğinde ekran metni (UI Text) Yeşil renge, yanlış girildiğinde ise Kırmızı renge dönecek şekilde kodunuzu modifiye ederseniz proje çok daha profesyonel hissettirir.
+            </div>
+
+            <div class="alert-box alert-success">
+                <strong>✨ Geliştirme Önerisi 2: Durum Makinesi (State Machine):</strong> Şifre sistemini bir "Envanter / Silah Seçim" menüsüne dönüştürebilirsiniz. Örneğin Unity'de '1' tuşuna basılınca karakteriniz kılıcını çeksin, '2' tuşuna basıldığında ok ve yayı çıkarsın. Keypad'ler oyunlarda muazzam bir "Kısayol Paneli (Macro Pad)" olarak kullanılabilir!
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h2>📥 Kaynakça ve Proje Dosyaları</h2>
+            <p>Bu projeye ait Arduino (ino) kodlarını, Unity sahne yedeğini (unitypackage) aşağıdan indirebilirsiniz.</p>
+            
+            <div class="download-container">
+                <a href="../kaynaklar/proje12_kaynak.rar" class="download-btn">
+                    <span>📦</span> Kaynak Dosyalarını İndir (.rar)
+                </a>
+
+                <div class="qr-box">
+                    <img src="" alt="QR Kod">
+                    <span style="display:block; margin-top:5px;">Mobil Cihazda<br>Görüntüle</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+  </html>
+  
