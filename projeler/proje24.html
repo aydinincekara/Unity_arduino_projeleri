@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proje 24: Sınırları Aşmak (ESP-NOW) - Unity Arduino Entegrasyonu</title>
+    <style>
+        /* ANA TEMA RENKLERİ */
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-color: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --btn-bg: #334155;
+            --btn-hover: #475569;
+            --code-bg: #0b0f19;
+            --info-color: #3b82f6;    
+            --warning-color: #f59e0b; 
+            --success-color: #10b981; 
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: 50px;
+        }
+
+        /* HEADER & ANASAYFA BUTONU */
+        header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
+            padding: 30px 20px;
+            border-bottom: 4px solid var(--accent-color);
+        }
+
+        .header-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-titles { flex: 1; }
+
+        header h1 {
+            font-size: 2.2rem;
+            color: #ffffff;
+            margin-bottom: 5px;
+            line-height: 1.2;
+        }
+
+        header p { color: var(--accent-color); font-size: 1.1rem; }
+
+        .back-btn {
+            background-color: var(--btn-bg);
+            color: var(--text-main);
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            border: 1px solid var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .back-btn:hover {
+            background-color: var(--accent-color);
+            border-color: var(--accent-hover);
+            color: var(--bg-color);
+        }
+
+        .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
+
+        .section-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            width: 100%;
+        }
+
+        h2 {
+            color: var(--accent-color);
+            font-size: 1.6rem;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--btn-bg);
+            padding-bottom: 10px;
+        }
+        
+        h3 { color: #cbd5e1; margin-top: 20px; margin-bottom: 10px; }
+
+        .alert-box {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 0.95rem;
+        }
+        .alert-info { background-color: rgba(59, 130, 246, 0.1); border-left: 5px solid var(--info-color); }
+        .alert-info strong { color: var(--info-color); }
+        .alert-warning { background-color: rgba(245, 158, 11, 0.1); border-left: 5px solid var(--warning-color); }
+        .alert-warning strong { color: var(--warning-color); }
+        .alert-success { background-color: rgba(16, 185, 129, 0.1); border-left: 5px solid var(--success-color); }
+        .alert-success strong { color: var(--success-color); }
+
+        ul { margin-left: 20px; color: var(--text-muted); margin-bottom: 15px;}
+        li { margin-bottom: 8px; }
+        strong { color: var(--text-main); }
+
+        .code-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            background-color: var(--code-bg);
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-color);
+            margin: 15px 0;
+        }
+
+        pre {
+            padding: 20px;
+            font-family: 'Consolas', monospace;
+            font-size: 0.95rem;
+            color: #e2e8f0;
+            white-space: pre; 
+            margin: 0;
+        }
+
+        .table-responsive { width: 100%; overflow-x: auto; margin-top: 15px; }
+        .schema-table { width: 100%; border-collapse: collapse; min-width: 500px; }
+        .schema-table th, .schema-table td { border: 1px solid var(--btn-bg); padding: 10px; text-align: left; }
+        .schema-table th { background-color: var(--btn-hover); color: white; }
+
+        .download-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+            background-color: var(--code-bg);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--btn-bg);
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background-color: var(--success-color);
+            color: #ffffff;
+            padding: 15px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        .download-btn:hover { background-color: #059669; transform: translateY(-3px); }
+
+        .qr-box {
+            width: 120px; height: 120px; background-color: var(--card-bg);
+            border: 2px dashed var(--text-muted); border-radius: 8px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; color: var(--text-muted); font-size: 0.8rem; overflow: hidden; padding: 5px;
+        }
+        .qr-box img { max-width: 100%; max-height: 100%; display: block; border-radius: 4px; }
+
+        @media (max-width: 768px) {
+            .header-container { flex-direction: column; text-align: center; }
+            .back-btn { align-self: flex-start; margin-bottom: 10px; }
+            .download-container { flex-direction: column; justify-content: center; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-container">
+            <a href="../index.html" class="back-btn">
+                <span>&#8592;</span> Anasayfa
+            </a>
+            <div class="header-titles">
+                <h1>Proje 24: Sınırları Aşmak (ESP-NOW)</h1>
+                <p>İnternetsiz ve Modemsiz P2P Haberleşme ile Kablosuz Araç Kontrolü</p>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <div class="section-card">
+            <h2>🎯 Proje Hakkında</h2>
+            <p>Wi-Fi ağlarının zayıf çektiği açık alanlarda, sergilerde veya fuarlarda cihazlarınızı nasıl yöneteceğinizi hiç düşündünüz mü? Espressif tarafından geliştirilen <strong>ESP-NOW</strong> protokolü sayesinde iki ESP32 kartı, tıpkı kablosuz mouse ve klavyeler gibi birbiriyle doğrudan (Peer-to-Peer) eşleşir. Sistemin çalışması için ne bir internete, ne de bir modeme ihtiyaç vardır.</p>
+            <br>
+            
+
+            <div class="alert-box alert-info">
+                <strong>💡 Hap Bilgi (MAC Adresi):</strong> ESP-NOW ile veri gönderebilmek için "Alıcı" ESP32'nin MAC Adresini (Tıpkı bir telefon numarası gibi cihazın eşsiz kimliği) "Verici" ESP32'nin koduna yazmamız gerekir.
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h2>🛠️ Gerekli Donanımlar ve Yazılımlar</h2>
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 250px;">
+                    <h3>Donanım Listesi</h3>
+                    <ul>
+                        <li><strong>2x</strong> ESP32 Geliştirme Kartı (Verici ve Alıcı)</li>
+                        <li><strong>1x</strong> SG90 Servo Motor (Direksiyon Simülasyonu için)</li>
+                        <li>Jumper Kablolar</li>
+                    </ul>
+                </div>
+                <div style="flex: 1; min-width: 250px;">
+                    <h3>Yazılım ve Kütüphaneler</h3>
+                    <ul>
+                        <li><strong>Arduino IDE:</strong> <code>esp_now.h</code> ve <code>WiFi.h</code> (ESP32 kart paketiyle gömülü gelir).</li>
+                        <li><strong>Unity:</strong> Standart <code>System.IO.Ports</code> kütüphanesi (Sadece PC'ye bağlı verici ESP32 ile haberleşmek için).</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h2>⚙️ Nasıl Yapılır? (Adım Adım)</h2>
+
+            <div class="alert-box alert-warning">
+                <strong>⚠️ ÖNEMLİ:</strong> Kodları yüklemeden önce "Alıcı" ESP32'nin MAC adresini bulmalısınız. Alıcı karta basit bir "WiFi.macAddress()" okuma kodu yükleyerek Serial Monitörden adresi not alın (Örn: <code>24:6F:28:AE:5C:20</code>).
+            </div>
+            
+            <h3>Adım 1: VERİCİ (Master) ESP32 Kodu (Bilgisayara Takılacak Olan)</h3>
+            <p>Bu kart USB ile bilgisayara bağlıdır. Unity'den "A" veya "D" komutlarını okur ve saliseler içinde havadaki Alıcı ESP32'ye gönderir.</p>
+            
+            <div class="code-wrapper">
+<pre>#include &lt;esp_now.h&gt;
+#include &lt;WiFi.h&gt;
+
+// ALICI ESP32'NİN MAC ADRESİNİ BURAYA YAZIN
+uint8_t aliciAdresi[] = {0x24, 0x6F, 0x28, 0xAE, 0x5C, 0x20};
+
+// Gönderilecek Veri Paketi (Yapı - Struct)
+typedef struct struct_mesaj {
+  char komut;
+} struct_mesaj;
+
+struct_mesaj gidenVeri;
+esp_now_peer_info_t peerInfo;
+
+void setup() {
+  Serial.begin(115200);
+  
+  // Wi-Fi'ı Station moduna al ama ağa bağlanma
+  WiFi.mode(WIFI_STA);
+
+  // ESP-NOW Başlat
+  if (esp_now_init() != ESP_OK) {
+    Serial.println("ESP-NOW Baslatilamadi!");
+    return;
+  }
+
+  // Alıcıyı kaydet
+  memcpy(peerInfo.peer_addr, aliciAdresi, 6);
+  peerInfo.channel = 0;  
+  peerInfo.encrypt = false;
+  esp_now_add_peer(&peerInfo);
+}
+
+void loop() {
+  // Unity'den veri gelirse oku
+  if (Serial.available() > 0) {
+    gidenVeri.komut = Serial.read();
+    
+    // Alıcı karta ESP-NOW üzerinden yolla
+    esp_err_t sonuc = esp_now_send(aliciAdresi, (uint8_t *) &gidenVeri, sizeof(gidenVeri));
+  }
+}</pre>
+            </div>
+
+            <h3>Adım 2: ALICI (Slave) ESP32 Kodu (Araca/Robota Takılacak Olan)</h3>
+            <p>Bu kart tamamen bağımsızdır, gücünü pilden alır. Havadan gelen komutu okuyup aracı (servoyu) sağa sola yönlendirir.</p>
+
+            <div class="code-wrapper">
+<pre>#include &lt;esp_now.h&gt;
+#include &lt;WiFi.h&gt;
+#include &lt;ESP32Servo.h&gt;
+
+Servo direksiyon;
+const int servoPin = 26;
+
+// Gelecek Veri Paketi (Vericideki ile birebir aynı olmalı)
+typedef struct struct_mesaj {
+  char komut;
+} struct_mesaj;
+
+struct_mesaj gelenVeri;
+
+// Veri alındığında otomatik çalışacak fonksiyon
+void veriGeldi(const uint8_t * mac, const uint8_t *gelenData, int uzunluk) {
+  memcpy(&gelenVeri, gelenData, sizeof(gelenVeri));
+  
+  // 'A' gelirse sola dön (45 derece)
+  if(gelenVeri.komut == 'A') direksiyon.write(45);
+  // 'D' gelirse sağa dön (135 derece)
+  else if(gelenVeri.komut == 'D') direksiyon.write(135);
+  // Diğer durumlarda düz git (90 derece)
+  else direksiyon.write(90);
+}
+
+void setup() {
+  Serial.begin(115200);
+  direksiyon.attach(servoPin);
+  direksiyon.write(90);
+
+  WiFi.mode(WIFI_STA);
+  if (esp_now_init() != ESP_OK) {
+    Serial.println("ESP-NOW Hatasi");
+    return;
+  }
+
+  // Gelen verileri dinlemeye başla
+  esp_now_register_recv_cb(veriGeldi);
+}
+
+void loop() {
+  // ESP-NOW arka planda çalıştığı için loop() boş kalabilir
+}</pre>
+            </div>
+
+            <h3>Adım 3: Unity Tarafında İletişim</h3>
+            <p>Unity sadece bilgisayara takılı olan "Verici" karta normal seri port (SerialPort) komutları yollayacaktır. ESP-NOW kısmı tamamen donanımsaldır, oyun motorunu yormaz.</p>
+            
+            <div class="code-wrapper">
+<pre>using UnityEngine;
+using System.IO.Ports;
+
+public class EspNowKontrol : MonoBehaviour {
+    SerialPort port = new SerialPort("COM3", 115200); // ESP32 hızına (115200) dikkat!
+
+    void Start() {
+        if(!port.IsOpen) port.Open();
+    }
+
+    void Update() {
+        if (port.IsOpen) {
+            // Klavyeden A'ya basılırsa
+            if (Input.GetKey(KeyCode.A)) {
+                port.Write("A");
+            }
+            // Klavyeden D'ye basılırsa
+            else if (Input.GetKey(KeyCode.D)) {
+                port.Write("D");
+            }
+            // Hiçbirine basılmazsa düz (Sıfırla) komutu
+            else {
+                port.Write("S"); 
+            }
+        }
+    }
+
+    void OnApplicationQuit() {
+        if(port.IsOpen) {
+            port.Write("S");
+            port.Close();
+        }
+    }
+}</pre>
+            </div>
+
+        </div>
+
+        <div class="section-card">
+            <h2>🚀 Geleceğe Yatırım ve Optimizasyon Önerileri</h2>
+            
+            <div class="alert-box alert-success">
+                <strong>✨ Mimari Uyumluluk (Motor Değişimi):</strong> Oluşturduğunuz bu kablosuz ağ yapısı, oyun motorundan tamamen bağımsızdır. Yakın gelecekte öğretim amaçlı planladığınız Unreal Engine 5.7 sürümüne geçiş yaptığınızda, Arduino kodlarına hiç dokunmadan, sadece UE5 Blueprint'leri veya C++ Sockets üzerinden "A" ve "D" harflerini Serial Port'a yollayarak aynı robotları kontrol etmeye devam edebilirsiniz.
+            </div>
+
+            <div class="alert-box alert-success">
+                <strong>✨ Sürü (Swarm) Mantığı:</strong> ESP-NOW'ın asıl gücü birebir haberleşmede değil, "Çoklu Haberleşmede" yatar. 1 adet Master (Kumanda) ESP32'den çıkan sinyali aynı anda 20 farklı Alıcı ESP32'ye senkronize şekilde yollayabilirsiniz. Bu yapı ile gösteri amaçlı senkronize hareket eden robot sürüleri (Swarm Robotics) tasarlamak mümkündür.
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h2>📥 Kaynakça ve Proje Dosyaları</h2>
+            <p>Bu projeye ait Verici/Alıcı ESP32 kodlarını ve Unity sahnesini aşağıdan indirebilirsiniz.</p>
+            
+            <div class="download-container">
+                <a href="../kaynaklar/proje24_kaynak.rar" class="download-btn">
+                    <span>📦</span> Kaynak Dosyalarını İndir (.rar)
+                </a>
+
+                <div class="qr-box">
+                    <img src="" alt="QR Kod">
+                    <span style="display:block; margin-top:5px;">Mobil Cihazda<br>Görüntüle</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
+
